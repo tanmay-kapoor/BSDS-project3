@@ -15,18 +15,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 import project3.Logger;
 import project3.RequestHandler;
 
 public class RequestHandlerImpl implements RequestHandler {
   private final Map<String, String> map;
-  private final ReadWriteLock rwlock;
   private String filePath;
   private Coordinator coordinator;
   private final Scanner sc;
@@ -34,8 +31,7 @@ public class RequestHandlerImpl implements RequestHandler {
   public RequestHandlerImpl() throws RemoteException {
     super();
     sc = new Scanner(System.in);
-    map = new HashMap<>();
-    rwlock = new ReentrantReadWriteLock();
+    map = new ConcurrentHashMap<>();
     Logger.showInfo("Populating HashMap\n");
 
     // read values from file
@@ -141,31 +137,23 @@ public class RequestHandlerImpl implements RequestHandler {
   }
 
   private String get(String key) {
-    rwlock.readLock().lock();
     if (!map.containsKey(key)) {
-      rwlock.readLock().unlock();
       throw new IllegalArgumentException("Can't get key that doesn't exist");
     }
-    rwlock.readLock().unlock();
     return map.get(key);
   }
 
   @Override
   public void put(String key, String value) throws RuntimeException {
-    rwlock.writeLock().lock();
     map.put(key, value);
-    rwlock.writeLock().unlock();
   }
 
   @Override
   public void delete(String key) {
-    rwlock.writeLock().lock();
     if (!map.containsKey(key)) {
-      rwlock.writeLock().unlock();
       throw new IllegalArgumentException("Can't delete key that doesn't exist");
     }
     map.remove(key);
-    rwlock.writeLock().unlock();
   }
 
   private void writeToFile() throws IOException {
