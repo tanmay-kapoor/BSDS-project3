@@ -20,6 +20,8 @@ public interface RequestHandler extends Remote {
   void delete(String key) throws RemoteException;
 
   boolean isBusy() throws RemoteException;
+
   void setIdleState() throws RemoteException;
+
   void setBusyState() throws RemoteException;
 }

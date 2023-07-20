@@ -1,11 +1,8 @@
 package project3.client;
 
-import org.json.simple.parser.ParseException;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -19,7 +16,7 @@ public class Client {
   private final Scanner sc;
   private final List<RequestHandler> serversList;
 
-  public Client() throws URISyntaxException, NotBoundException, IOException, ParseException {
+  public Client() {
     this.sc = new Scanner(System.in);
     this.serversList = new ArrayList<>();
   }
@@ -84,10 +81,7 @@ public class Client {
       }
 
       client.start();
-    } catch (FileNotFoundException e) {
-      Logger.showError("No servers found!");
-    } catch (RuntimeException | URISyntaxException | NotBoundException | ParseException |
-             IOException e) {
+    } catch (RuntimeException | NotBoundException | RemoteException e) {
       Logger.showError(e.getMessage());
     }
   }

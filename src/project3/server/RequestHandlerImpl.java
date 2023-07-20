@@ -78,7 +78,7 @@ public class RequestHandlerImpl implements RequestHandler {
   }
 
   @Override
-  public String handleRequest(String command) throws IOException, InterruptedException, RuntimeException {
+  public String handleRequest(String command) throws IOException, InterruptedException {
     command = command.trim();
     String res;
 
