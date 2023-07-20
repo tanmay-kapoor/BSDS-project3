@@ -6,28 +6,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.rmi.NotBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import project3.Common;
 import project3.Logger;
 import project3.RequestHandler;
 
 public class Client {
   private final Scanner sc;
-  private List<RequestHandler> servers;
+  private final List<RequestHandler> serversList;
 
   public Client() throws URISyntaxException, NotBoundException, IOException, ParseException {
     this.sc = new Scanner(System.in);
-    this.servers = new ArrayList<>();
-
-    Logger.showInfo("Looking up all servers...\n\n");
-    Common common = new Common();
-    this.servers = common.lookupRegistries();
-    if (this.servers.size() == 0) {
-      throw new RuntimeException("No servers running!");
-    }
+    this.serversList = new ArrayList<>();
   }
 
   private void start() {
@@ -55,12 +49,12 @@ public class Client {
           command = command.substring(serverNumberEndIndex + 1).trim();
         }
 
-        String res = this.servers.get(serverNumber - 1).handleRequest(command);
+        String res = this.serversList.get(serverNumber - 1).handleRequest(command);
         Logger.showResponse(res);
       } catch (StringIndexOutOfBoundsException e) {
         Logger.showError("Please specify which server to send the request to.");
       } catch (IndexOutOfBoundsException e) {
-        Logger.showError("Please specify a number from 1 to " + this.servers.size() + " which is the current number of servers.");
+        Logger.showError("Please specify a number from 1 to " + this.serversList.size() + " which is the current number of servers.");
       } catch (RuntimeException | InterruptedException | IOException e) {
         Logger.showError(e.getMessage());
       }
@@ -69,7 +63,26 @@ public class Client {
 
   public static void main(String[] args) {
     try {
+      if (args.length % 2 == 1) {
+        throw new IllegalArgumentException("Invalid number of arguments! " +
+                "Please specify the host and port number for each server.");
+      }
+
+      Logger.showInfo("Looking up all servers...\n\n");
       Client client = new Client();
+
+      for (int i = 0; i < args.length; i += 2) {
+        String host = args[i];
+        int port = Integer.parseInt(args[i + 1]);
+        Registry registry = LocateRegistry.getRegistry(host, port);
+        RequestHandler handler = (RequestHandler) registry.lookup("handler");
+        client.serversList.add(handler);
+      }
+
+      if (client.serversList.size() == 0) {
+        throw new RuntimeException("No servers running!");
+      }
+
       client.start();
     } catch (FileNotFoundException e) {
       Logger.showError("No servers found!");

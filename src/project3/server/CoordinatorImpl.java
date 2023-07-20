@@ -1,11 +1,6 @@
 package project3.server;
 
-import org.json.simple.parser.ParseException;
-
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,33 +8,20 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import project3.Common;
 import project3.Logger;
 import project3.RequestHandler;
 
 public class CoordinatorImpl implements Coordinator {
   private final List<RequestHandler> participants;
 
-  public CoordinatorImpl(String host, int port) throws URISyntaxException, IOException, NotBoundException, ParseException {
-    Logger.showInfo("Starting coordinator...\n");
+  public CoordinatorImpl() {
+    participants = new ArrayList<>();
+  }
 
-    System.setProperty("java.rmi.server.hostname", host);
-    Coordinator thisObj = (Coordinator) UnicastRemoteObject.exportObject(this, port);
-
-    Logger.showInfo("Creating Registry\n\n");
-    Registry registry = LocateRegistry.createRegistry(port);
-
-    registry.rebind("coordinator", thisObj);
-
-    Common common = new Common();
-    participants = common.lookupRegistries(this);
-    File f = new File(common.getServersFilePath());
-    f.deleteOnExit();
-
-    if (participants.size() == 0) {
-      throw new RuntimeException("No participants running!");
-    }
-    Logger.showInfo("Coordinator is setup and ready to go!\n\n");
+  @Override
+  public void addParticipant(RequestHandler participant) throws RemoteException {
+    participants.add(participant);
+    Logger.showInfo("Added participant\n");
   }
 
   @Override
@@ -158,9 +140,18 @@ public class CoordinatorImpl implements Coordinator {
       String host = args[0];
       int port = Integer.parseInt(args[1]);
 
-      Coordinator coordinator = new CoordinatorImpl(host, port);
-    } catch (RuntimeException | URISyntaxException | IOException | NotBoundException |
-             ParseException e) {
+      Logger.showInfo("Starting coordinator...\n");
+      Coordinator obj = new CoordinatorImpl();
+
+      System.setProperty("java.rmi.server.hostname", host);
+      Coordinator coordinator = (Coordinator) UnicastRemoteObject.exportObject(obj, port);
+
+      Logger.showInfo("Creating Registry\n\n");
+      Registry registry = LocateRegistry.createRegistry(port);
+      registry.rebind("coordinator", coordinator);
+
+      Logger.showInfo("Coordinator is setup and ready to go!\n\n");
+    } catch (RuntimeException | IOException e) {
       Logger.showError(e.getMessage());
     }
   }
