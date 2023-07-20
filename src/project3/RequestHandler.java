@@ -18,4 +18,8 @@ public interface RequestHandler extends Remote {
   void put(String key, String value) throws RemoteException;
 
   void delete(String key) throws RemoteException;
+
+  boolean isBusy() throws RemoteException;
+  void setIdleState() throws RemoteException;
+  void setBusyState() throws RemoteException;
 }

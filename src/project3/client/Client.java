@@ -25,6 +25,9 @@ public class Client {
     Logger.showInfo("Looking up all servers...\n\n");
     Common common = new Common();
     this.servers = common.lookupRegistries();
+    if (this.servers.size() == 0) {
+      throw new RuntimeException("No servers running!");
+    }
   }
 
   private void start() {
@@ -70,7 +73,7 @@ public class Client {
       client.start();
     } catch (FileNotFoundException e) {
       Logger.showError("No servers found!");
-    } catch (URISyntaxException | NotBoundException | ParseException |
+    } catch (RuntimeException | URISyntaxException | NotBoundException | ParseException |
              IOException e) {
       Logger.showError(e.getMessage());
     }

@@ -27,9 +27,15 @@ public class RequestHandlerImpl implements RequestHandler {
   private String filePath;
   private Coordinator coordinator;
   private final Scanner sc;
+  private State state;
+
+  enum State {
+    IDLE, BUSY
+  }
 
   public RequestHandlerImpl() throws RemoteException {
     super();
+    this.state = State.IDLE;
     sc = new Scanner(System.in);
     map = new ConcurrentHashMap<>();
     Logger.showInfo("Populating HashMap\n");
@@ -76,14 +82,13 @@ public class RequestHandlerImpl implements RequestHandler {
     command = command.trim();
     String res;
 
-    Logger.showRequest(command);
-
     String[] req = command.split("\\t+");
     req[0] = req[0].toUpperCase();
 
     boolean shouldProceed;
     switch (req[0]) {
       case "GET":
+        Logger.showRequest(command);
         validateRequest(req, 2);
         res = this.get(req[1]);
         break;
@@ -92,6 +97,7 @@ public class RequestHandlerImpl implements RequestHandler {
         validateRequest(req, 3);
         shouldProceed = coordinator.broadcastPrepare();
         if (shouldProceed) {
+          Logger.showRequest(command);
           coordinator.broadcastPut(req[1], req[2]);
           res = "Put successful";
         } else {
@@ -103,6 +109,7 @@ public class RequestHandlerImpl implements RequestHandler {
         validateRequest(req, 2);
         shouldProceed = coordinator.broadcastPrepare();
         if (shouldProceed) {
+          Logger.showRequest(command);
           coordinator.broadcastDelete(req[1]);
           res = "Delete successful";
         } else {
@@ -112,6 +119,7 @@ public class RequestHandlerImpl implements RequestHandler {
 
       case "STOP":
         validateRequest(req, 1);
+        Logger.showRequest(command);
         this.writeToFile();
         res = "Disconnected client";
         break;
@@ -125,7 +133,26 @@ public class RequestHandlerImpl implements RequestHandler {
   }
 
   @Override
+  public boolean isBusy() throws RemoteException {
+    return this.state == State.BUSY;
+  }
+
+  @Override
+  public void setIdleState() throws RemoteException {
+    this.state = State.IDLE;
+  }
+
+  @Override
+  public void setBusyState() throws RemoteException {
+    this.state = State.BUSY;
+  }
+
+  @Override
   public boolean askPrepare() throws RemoteException {
+    if (isBusy()) {
+      return false;
+    }
+    setBusyState();
     Logger.showInfo("New transaction started. Are you prepared? (yes/no) : ");
     return sc.nextLine().trim().equalsIgnoreCase("yes");
   }

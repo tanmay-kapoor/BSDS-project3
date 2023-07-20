@@ -43,30 +43,33 @@ public class CoordinatorImpl implements Coordinator {
   }
 
   @Override
-  public boolean broadcastPrepare() throws InterruptedException {
+  public boolean broadcastPrepare() throws RemoteException, InterruptedException {
     boolean shouldProceed = this.broadcast("prepare");
     if (!shouldProceed) {
-      Logger.showError("Request aborted. 1 or more participants failed to prepare.");
+      Logger.showError("A participant failed to prepare.");
       return false;
     }
     return this.broadcastCommit();
   }
 
   @Override
-  public boolean broadcastCommit() throws InterruptedException {
+  public boolean broadcastCommit() throws RemoteException, InterruptedException {
     boolean shouldProceed = this.broadcast("commit");
     if (!shouldProceed) {
-      Logger.showError("Request aborted. 1 or more participants failed to commit.");
+      Logger.showError("A participant failed to commit.");
       return false;
     }
     return true;
   }
 
-  private boolean broadcast(String command) throws InterruptedException {
+  private boolean broadcast(String command) throws RemoteException, InterruptedException {
     List<Thread> threads = new ArrayList<>();
     List<Boolean> results = new ArrayList<>();
 
     for (RequestHandler participant : participants) {
+      if (participant.isBusy()) {
+        return false;
+      }
       Thread thread = new Thread(() -> {
         try {
           switch (command) {
@@ -83,11 +86,15 @@ public class CoordinatorImpl implements Coordinator {
         }
       });
       threads.add(thread);
-      thread.start();
     }
 
     for (Thread thread : threads) {
-      thread.join();
+      thread.start();
+    }
+
+    for (int i = 0; i < threads.size(); i++) {
+      threads.get(i).join();
+      participants.get(i).setIdleState();
     }
 
     boolean shouldProceed = true;
