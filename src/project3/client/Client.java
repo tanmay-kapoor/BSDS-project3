@@ -12,10 +12,18 @@ import java.util.Scanner;
 import project3.Logger;
 import project3.RequestHandler;
 
+/**
+ * Class that represents a client in the Remote Method Invocation simulation. This is where all
+ * users connect to the servers and send requests which send back a response.
+ */
 public class Client {
   private final Scanner sc;
   private final List<RequestHandler> serversList;
 
+  /**
+   * Constructor to initialize the scanner object for user input. Also, to initialize the list of
+   * servers to send requests to.
+   */
   public Client() {
     this.sc = new Scanner(System.in);
     this.serversList = new ArrayList<>();
@@ -58,6 +66,16 @@ public class Client {
     }
   }
 
+  /**
+   * Driver that is the entry point for the client. This method is executed when we run the
+   * program where it validates the cli arguments received and calls the required methods to
+   * proceed further in the program execution.
+   *
+   * @param args String array for command line arguments to be passed when running the program.
+   *             For this program this array should have even elements. For every 2 elements,
+   *             first is the host ip of server and second will be the port at which the server
+   *             is running.
+   */
   public static void main(String[] args) {
     try {
       if (args.length % 2 == 1) {

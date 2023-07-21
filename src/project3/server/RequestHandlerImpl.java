@@ -22,6 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import project3.Logger;
 import project3.RequestHandler;
 
+/**
+ * Class that implements the RequestHandler interface and is basically a representation of the
+ * object that needs to be export on a specific port number which can then be used by the client
+ * to send requests to be served.
+ */
 public class RequestHandlerImpl implements RequestHandler {
   private final Map<String, String> map;
   private String filePath;
@@ -29,10 +34,17 @@ public class RequestHandlerImpl implements RequestHandler {
   private final Scanner sc;
   private State state;
 
-  enum State {
+  private enum State {
     IDLE, BUSY
   }
 
+  /**
+   * Constructor that initializes the hash-map that is going to be the key-value store to be
+   * demonstrated in this project and the state of the server which is idle at the beginning.
+   *
+   * @throws RemoteException in case of communication related errors during the execution of a
+   *                         remote method call.
+   */
   public RequestHandlerImpl() throws RemoteException {
     super();
     this.state = State.IDLE;
@@ -163,7 +175,8 @@ public class RequestHandlerImpl implements RequestHandler {
     return sc.nextLine().trim().equalsIgnoreCase("yes");
   }
 
-  private String get(String key) {
+  @Override
+  public String get(String key) {
     if (!map.containsKey(key)) {
       throw new IllegalArgumentException("Can't get key that doesn't exist");
     }

@@ -11,9 +11,16 @@ import java.util.List;
 import project3.Logger;
 import project3.RequestHandler;
 
+/**
+ *
+ */
 public class CoordinatorImpl implements Coordinator {
   private final List<RequestHandler> participants;
 
+  /**
+   * Constructor to initialize the participants list. Whenever a new participant is started, it is
+   * added to this list to reference in the future.
+   */
   public CoordinatorImpl() {
     participants = new ArrayList<>();
   }
@@ -131,6 +138,14 @@ public class CoordinatorImpl implements Coordinator {
     }
   }
 
+  /**
+   * Driver method of the class which is the entry point of the program. It takes 2 cli arguments
+   * which are the ip address and port of the machine to export the object to.
+   *
+   * @param args String array for command line arguments to be passed when running the program.
+   *             For this program this array should have two elements which are the ip address and
+   *             port to export the object to.
+   */
   public static void main(String[] args) {
     try {
       if (args.length != 2) {
