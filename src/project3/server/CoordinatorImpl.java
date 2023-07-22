@@ -12,10 +12,15 @@ import project3.Logger;
 import project3.RequestHandler;
 
 /**
- *
+ * Class that simulates the Participant in the 2 phase commit protocol. This class validates the
+ * arguments provided from cli, establishes connection at the specified ip address, and also creates
+ * the rmi registry which will hold the Coordinator object. It is responsible for broadcasting
+ * prepare to all servers, receiving positive negative response, broadcasting commit message to all
+ * servers and receiving positive or negative response.
  */
 public class CoordinatorImpl implements Coordinator {
   private final List<RequestHandler> participants;
+  private String ongoingTransactionKey;
 
   /**
    * Constructor to initialize the participants list. Whenever a new participant is started, it is
@@ -23,6 +28,7 @@ public class CoordinatorImpl implements Coordinator {
    */
   public CoordinatorImpl() {
     participants = new ArrayList<>();
+    ongoingTransactionKey = "";
   }
 
   @Override
@@ -32,17 +38,13 @@ public class CoordinatorImpl implements Coordinator {
   }
 
   @Override
-  public boolean isAnyParticipantBusy() throws RemoteException {
-    for (RequestHandler participant : participants) {
-      if (participant.isBusy()) {
-        return true;
-      }
-    }
-    return false;
+  public boolean isPartOfOngoingTransaction(String key) throws RemoteException {
+    return ongoingTransactionKey.equals(key);
   }
 
   @Override
-  public boolean broadcastPrepare() throws RemoteException, InterruptedException {
+  public boolean broadcastPrepare(String key) throws RemoteException, InterruptedException {
+    ongoingTransactionKey = key;
     boolean shouldProceed = this.broadcast("prepare");
     if (!shouldProceed) {
       Logger.showError("A participant failed to prepare.");
@@ -54,6 +56,7 @@ public class CoordinatorImpl implements Coordinator {
   @Override
   public boolean broadcastCommit() throws RemoteException, InterruptedException {
     boolean shouldProceed = this.broadcast("commit");
+    ongoingTransactionKey = "";
     if (!shouldProceed) {
       Logger.showError("A participant failed to commit.");
       return false;

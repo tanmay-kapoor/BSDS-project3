@@ -101,21 +101,20 @@ public class RequestHandlerImpl implements RequestHandler {
     switch (req[0]) {
       case "GET":
         validateRequest(req, 2);
-        shouldProceed = !coordinator.isAnyParticipantBusy();
+        shouldProceed = !coordinator.isPartOfOngoingTransaction(req[1]);
         if (shouldProceed) {
-          Logger.showRequest(command);
+//          Logger.showRequest(command);
           res = this.get(req[1]);
         } else {
-          // reject if any ongoing transaction or ONLY mentioned key is related to that transaction?
-          throw new RuntimeException("Request aborted. There is an ongoing transaction right now.");
+          throw new RuntimeException("Request aborted. There is an ongoing transaction that deals with the specified key.");
         }
         break;
 
       case "PUT":
         validateRequest(req, 3);
-        shouldProceed = coordinator.broadcastPrepare();
+        shouldProceed = coordinator.broadcastPrepare(req[1]);
         if (shouldProceed) {
-          Logger.showRequest(command);
+//          Logger.showRequest(command);
           coordinator.broadcastPut(req[1], req[2]);
           res = "Put successful";
         } else {
@@ -125,9 +124,9 @@ public class RequestHandlerImpl implements RequestHandler {
 
       case "DELETE":
         validateRequest(req, 2);
-        shouldProceed = coordinator.broadcastPrepare();
+        shouldProceed = coordinator.broadcastPrepare(req[1]);
         if (shouldProceed) {
-          Logger.showRequest(command);
+//          Logger.showRequest(command);
           coordinator.broadcastDelete(req[1]);
           res = "Delete successful";
         } else {
@@ -137,7 +136,7 @@ public class RequestHandlerImpl implements RequestHandler {
 
       case "STOP":
         validateRequest(req, 1);
-        Logger.showRequest(command);
+//        Logger.showRequest(command);
         this.writeToFile();
         res = "Disconnected client";
         break;

@@ -20,12 +20,13 @@ public interface Coordinator extends Remote {
   void addParticipant(RequestHandler participant) throws RemoteException;
 
   /**
-   * Method to check if any of the participants is busy.
+   * Method to check if the key being referenced is part of an ongoing transaction.
    *
-   * @return True if any of the participants is busy. False otherwise.
+   * @param key The key to be checked.
+   * @return True if the key is part of an ongoing transaction. False otherwise.
    * @throws RemoteException If there is an error in the remote method call.
    */
-  boolean isAnyParticipantBusy() throws RemoteException;
+  boolean isPartOfOngoingTransaction(String key) throws RemoteException;
 
   /**
    * Method that initiates the 2 phase commit protocol across all the participants.
@@ -36,7 +37,7 @@ public interface Coordinator extends Remote {
    * @throws InterruptedException If the thread is interrupted while waiting for the participants
    *                              to prepare.
    */
-  boolean broadcastPrepare() throws RemoteException, InterruptedException;
+  boolean broadcastPrepare(String key) throws RemoteException, InterruptedException;
 
   /**
    * Method that asks all participants whether they want to commit/abort the ongoing transaction.
