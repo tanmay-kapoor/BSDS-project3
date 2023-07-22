@@ -20,6 +20,14 @@ public interface Coordinator extends Remote {
   void addParticipant(RequestHandler participant) throws RemoteException;
 
   /**
+   * Method to check if any of the participants is busy.
+   *
+   * @return True if any of the participants is busy. False otherwise.
+   * @throws RemoteException If there is an error in the remote method call.
+   */
+  boolean isAnyParticipantBusy() throws RemoteException;
+
+  /**
    * Method that initiates the 2 phase commit protocol across all the participants.
    * It asks each participant on a separate thread to prepare for commit.
    *

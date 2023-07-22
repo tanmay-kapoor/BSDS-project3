@@ -32,6 +32,16 @@ public class CoordinatorImpl implements Coordinator {
   }
 
   @Override
+  public boolean isAnyParticipantBusy() throws RemoteException {
+    for (RequestHandler participant : participants) {
+      if (participant.isBusy()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   public boolean broadcastPrepare() throws RemoteException, InterruptedException {
     boolean shouldProceed = this.broadcast("prepare");
     if (!shouldProceed) {

@@ -100,9 +100,15 @@ public class RequestHandlerImpl implements RequestHandler {
     boolean shouldProceed;
     switch (req[0]) {
       case "GET":
-        Logger.showRequest(command);
         validateRequest(req, 2);
-        res = this.get(req[1]);
+        shouldProceed = !coordinator.isAnyParticipantBusy();
+        if (shouldProceed) {
+          Logger.showRequest(command);
+          res = this.get(req[1]);
+        } else {
+          // reject if any ongoing transaction or ONLY mentioned key is related to that transaction?
+          throw new RuntimeException("Request aborted. There is an ongoing transaction right now.");
+        }
         break;
 
       case "PUT":
