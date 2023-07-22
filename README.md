@@ -57,3 +57,15 @@ To show the operations comfortable, the screenshots run only 2 participants and 
 run as many instances as you want.
 
 ### Please check `Summary.md` in the `out` directory for key learnings.
+
+## Clarifications
+
+In my design, I have chosen to do the following:
+
+- If a client does put/delete request on a key and another client does a get request on the same
+  key,
+  then the get request is rejected since the ongoing transaction might update that key. However, if
+  the get request is for a different key then it is allowed since the 2 requests are unrelated.
+- If a client does a put/delete request on one key and another client does a put/delete request on
+  the same/different key, it is rejected. This was done since one of TAs informed me that two 2pc
+  protocols should not be allowed to execute till the first one has finished executing.
